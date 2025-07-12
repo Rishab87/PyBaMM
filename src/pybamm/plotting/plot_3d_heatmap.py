@@ -1,10 +1,12 @@
-import pybamm
 import matplotlib.pyplot as plt
+
+import pybamm
+
 
 def plot_3d_heatmap(
     solution: "pybamm.Solution",
     variable: str = "Cell temperature [K]",
-    t: float = None,
+    t: float | None = None,
     ax=None,
     show_plot: bool = True,
     cmap: str = "inferno",
@@ -64,8 +66,14 @@ def plot_3d_heatmap(
         fig = ax.get_figure()
 
     scatter = ax.scatter(
-        nodes[:, 0], nodes[:, 1], nodes[:, 2],
-        c=color_data, cmap=cmap, s=marker_size, alpha=alpha, **kwargs
+        nodes[:, 0],
+        nodes[:, 1],
+        nodes[:, 2],
+        c=color_data,
+        cmap=cmap,
+        s=marker_size,
+        alpha=alpha,
+        **kwargs,
     )
 
     ax.set_xlabel("x [m]")

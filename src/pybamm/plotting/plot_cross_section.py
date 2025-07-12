@@ -1,11 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import pybamm  
+
+import pybamm
+
 
 def plot_3d_cross_section(
     solution: "pybamm.Solution",
     variable: str = "Cell temperature [K]",
-    t: float = None,
+    t: float | None = None,
     plane: str = "xy",
     position: float = 0.5,
     n_pts: int = 100,
@@ -13,7 +15,7 @@ def plot_3d_cross_section(
     show_plot: bool = True,
     cmap: str = "inferno",
     levels: int = 20,
-    use_offset: bool = False,  
+    use_offset: bool = False,
     **kwargs,
 ):
     """
@@ -70,7 +72,7 @@ def plot_3d_cross_section(
     fig = None
     if ax is None:
         if geometry == "cylindrical" and plane == "xy":
-            fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
+            fig, ax = plt.subplots(subplot_kw={"projection": "polar"})
         else:
             fig, ax = plt.subplots(figsize=(8, 6))
 
@@ -78,7 +80,7 @@ def plot_3d_cross_section(
     title_suffix = f"at t={t:.1f}s"
 
     if geometry == "cylindrical":
-        r_coords = np.sqrt(nodes[:, 0]**2 + nodes[:, 1]**2)
+        r_coords = np.sqrt(nodes[:, 0] ** 2 + nodes[:, 1] ** 2)
         r_min, r_max = np.min(r_coords), np.max(r_coords)
 
         if plane == "xy":
@@ -92,10 +94,12 @@ def plot_3d_cross_section(
 
             data = var_obj(t=t, x=X_eval, y=Y_eval, z=Z_eval)
 
-            pcm = ax.contourf(Theta_mesh, R_mesh, data, levels=levels, cmap=cmap, **kwargs)
+            pcm = ax.contourf(
+                Theta_mesh, R_mesh, data, levels=levels, cmap=cmap, **kwargs
+            )
             ax.set_ylim(r_min, r_max)
             ax.set_title(f"T(r,θ) at z={slice_coord_val:.2f}m, {title_suffix}")
-            
+
             cbar = fig.colorbar(pcm, ax=ax, label=variable)
             if not use_offset:
                 cbar.formatter.set_useOffset(False)
@@ -117,7 +121,10 @@ def plot_3d_cross_section(
     else:
         if plane == "yz":
             slice_coord_val = x_min + (x_max - x_min) * position
-            y_grid, z_grid = np.linspace(y_min, y_max, n_pts), np.linspace(z_min, z_max, n_pts)
+            y_grid, z_grid = (
+                np.linspace(y_min, y_max, n_pts),
+                np.linspace(z_min, z_max, n_pts),
+            )
             Y_eval, Z_eval = np.meshgrid(y_grid, z_grid)
             X_eval = np.full_like(Y_eval, slice_coord_val)
             x_label, y_label = "y [m]", "z [m]"
@@ -125,7 +132,10 @@ def plot_3d_cross_section(
             data_X, data_Y = Y_eval, Z_eval
         elif plane == "xz":
             slice_coord_val = y_min + (y_max - y_min) * position
-            x_grid, z_grid = np.linspace(x_min, x_max, n_pts), np.linspace(z_min, z_max, n_pts)
+            x_grid, z_grid = (
+                np.linspace(x_min, x_max, n_pts),
+                np.linspace(z_min, z_max, n_pts),
+            )
             X_eval, Z_eval = np.meshgrid(x_grid, z_grid)
             Y_eval = np.full_like(X_eval, slice_coord_val)
             x_label, y_label = "x [m]", "z [m]"
@@ -133,21 +143,26 @@ def plot_3d_cross_section(
             data_X, data_Y = X_eval, Z_eval
         elif plane == "xy":
             slice_coord_val = z_min + (z_max - z_min) * position
-            x_grid, y_grid = np.linspace(x_min, x_max, n_pts), np.linspace(y_min, y_max, n_pts)
+            x_grid, y_grid = (
+                np.linspace(x_min, x_max, n_pts),
+                np.linspace(y_min, y_max, n_pts),
+            )
             X_eval, Y_eval = np.meshgrid(x_grid, y_grid)
             Z_eval = np.full_like(X_eval, slice_coord_val)
             x_label, y_label = "x [m]", "y [m]"
             plot_title = f"T(x,y) at z={slice_coord_val:.2f}m, {title_suffix}"
             data_X, data_Y = X_eval, Y_eval
         elif plane not in ["rz"]:
-             raise ValueError(f"Plane '{plane}' invalid. Use 'xy', 'yz', 'xz', or 'rz'.")
+            raise ValueError(f"Plane '{plane}' invalid. Use 'xy', 'yz', 'xz', or 'rz'.")
 
     data_cross_section = var_obj(
         t=t, x=X_eval.ravel(), y=Y_eval.ravel(), z=Z_eval.ravel()
     ).reshape(X_eval.shape)
 
-    pcm = ax.contourf(data_X, data_Y, data_cross_section, levels=levels, cmap=cmap, **kwargs)
-    
+    pcm = ax.contourf(
+        data_X, data_Y, data_cross_section, levels=levels, cmap=cmap, **kwargs
+    )
+
     cbar = fig.colorbar(pcm, ax=ax, label=variable)
     if not use_offset:
         cbar.formatter.set_useOffset(False)
