@@ -1860,6 +1860,7 @@ class TestProcessedVariable:
         )
 
         assert isinstance(processed_var, pybamm.ProcessedVariableUnstructured)
+
     def test_as_computed_0D(self):
         # 0D
         t = pybamm.t
