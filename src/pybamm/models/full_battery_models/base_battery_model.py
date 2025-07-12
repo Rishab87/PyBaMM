@@ -294,7 +294,7 @@ class BatteryModelOptions(pybamm.FuzzyDict):
         self.possible_options = {
             "calculate discharge energy": ["false", "true"],
             "calculate heat source for isothermal models": ["false", "true"],
-            "cell geometry": ["arbitrary", "pouch"],
+            "cell geometry": ["arbitrary", "pouch", "box", "cylindrical"],
             "contact resistance": ["false", "true"],
             "convection": ["none", "uniform transverse", "full transverse"],
             "current collector": [
@@ -303,7 +303,7 @@ class BatteryModelOptions(pybamm.FuzzyDict):
                 "potential pair quite conductive",
             ],
             "diffusivity": ["single", "current sigmoid"],
-            "dimensionality": [0, 1, 2],
+            "dimensionality": [0, 1, 2, 3],
             "electrolyte conductivity": [
                 "default",
                 "full",
@@ -662,6 +662,17 @@ class BatteryModelOptions(pybamm.FuzzyDict):
                 raise pybamm.OptionError(
                     "cannot have transverse convection in 0D model"
                 )
+        if options["dimensionality"] == 3:
+            if options["cell geometry"] not in ["box", "cylindrical"]:
+                raise pybamm.OptionError(
+                    "cell geometry must be box or cylindrical in 3D model"
+                )
+
+        if options["cell geometry"] in ["box", "cylindrical"]:
+            if options["dimensionality"] != 3:
+                raise pybamm.OptionError(
+                    "cell geometry must be 3D for box or cylindrical geometries"
+                )
 
         if (
             options["thermal"] in ["x-lumped", "x-full"]
@@ -990,6 +1001,17 @@ class BaseBatteryModel(pybamm.BaseModel):
 
         elif self.options["dimensionality"] == 2:
             base_submeshes["current collector"] = pybamm.ScikitUniform2DSubMesh
+        elif self.options["dimensionality"] == 3:
+            base_submeshes["current collector"] = pybamm.SubMesh0D
+            geom_type = self.options.get("cell geometry", "box")
+            if geom_type == "box":
+                base_submeshes["cell"] = pybamm.ScikitFemGenerator3D(
+                    geom_type="box", h="0.1"
+                )
+            elif geom_type == "cylindrical":
+                base_submeshes["cell"] = pybamm.ScikitFemGenerator3D(
+                    geom_type="cylinder", h="0.1"
+                )
         return base_submeshes
 
     @property
@@ -1018,6 +1040,11 @@ class BaseBatteryModel(pybamm.BaseModel):
             base_spatial_methods["current collector"] = pybamm.FiniteVolume()
         elif self.options["dimensionality"] == 2:
             base_spatial_methods["current collector"] = pybamm.ScikitFiniteElement()
+        elif self.options["dimensionality"] == 3:
+            base_spatial_methods["current collector"] = (
+                pybamm.ZeroDimensionalSpatialMethod()
+            )
+            base_spatial_methods["cell"] = pybamm.ScikitFiniteElement3D()
         return base_spatial_methods
 
     @property
