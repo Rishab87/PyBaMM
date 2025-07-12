@@ -12,7 +12,6 @@ from .util import (
     get_parameters_filepath,
     has_jax,
     import_optional_dependency,
-    is_jax_compatible,
 )
 from .logger import logger, set_logging_level, get_new_logger
 from .settings import settings
@@ -120,7 +119,6 @@ from .parameters.lithium_ion_parameters import LithiumIonParameters
 from .parameters.lead_acid_parameters import LeadAcidParameters
 from .parameters.ecm_parameters import EcmParameters
 from .parameters.size_distribution_parameters import *
-from .parameters.parameter_sets import parameter_sets
 
 # Mesh and Discretisation classes
 from .discretisations.discretisation import Discretisation
@@ -207,6 +205,8 @@ from . import callbacks, telemetry, config
 # Pybamm Data manager using pooch
 from .pybamm_data import DataLoader
 
+from .dispatch import parameter_sets, Model
+
 # Fix Casadi import
 import os
 import pathlib
@@ -239,6 +239,7 @@ __all__ = [
     "util",
     "version",
     "pybamm_data",
+    "dispatch",
 ]
 
 config.generate()

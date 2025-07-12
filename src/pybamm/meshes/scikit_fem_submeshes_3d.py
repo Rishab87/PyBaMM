@@ -11,9 +11,15 @@ class ScikitFemGenerator3D(pybamm.MeshGenerator):
     Parameters
     ----------
     geom_type : str
-        Type of geometry to generate ('box' or 'cylinder')
-    **gen_params : dict
-        Geometry-specific parameters
+        The type of geometry to generate. Must be one of "box" for a rectangular
+        prism, or "cylinder" for a cylindrical annulus.
+    gen_params : dict
+        A dictionary of geometry-specific parameters. for eg:
+
+        - "h" : float, optional
+            The target characteristic length of the mesh elements. A smaller 'h'
+            results in a finer mesh and a more accurate solution, but
+            increases computation time. Default is 0.3.
     """
 
     def __init__(self, geom_type, **gen_params):
@@ -21,7 +27,7 @@ class ScikitFemGenerator3D(pybamm.MeshGenerator):
         if geom_type not in supported_geometries:
             raise pybamm.GeometryError(
                 f"geom_type must be one of {supported_geometries}, not '{geom_type}'"
-            )  # pragma: no cover
+            )
         super().__init__(ScikitFemSubMesh3D)
         self.geom_type = geom_type
         self.gen_params = gen_params
@@ -75,6 +81,7 @@ class ScikitFemGenerator3D(pybamm.MeshGenerator):
     def _make_cylindrical_mesh(self, r_lim, z_lim, h):
         """
         Create a cylindrical annulus mesh.
+
         Parameters
         ----------
         r_lim : tuple
@@ -83,6 +90,7 @@ class ScikitFemGenerator3D(pybamm.MeshGenerator):
             Vertical limits (z_min, z_max)
         h : float
             Target mesh size
+
         Returns
         -------
         skfem.MeshTet
